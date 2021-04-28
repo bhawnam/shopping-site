@@ -6,10 +6,10 @@ put melons in a shopping cart.
 Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 """
 
-from flask import Flask, render_template, redirect, flash, session
+from flask import Flask, render_template, redirect, flash, session, request
 import jinja2
 
-import melons
+import melons, customers
 
 app = Flask(__name__)
 
@@ -139,21 +139,42 @@ def process_login():
     dictionary, look up the user, and store them in the session.
     """
 
-    # TODO: Need to implement this!
-
     # The logic here should be something like:
-    #
     # - get user-provided name and password from request.form
+    user_email = request.form.get("email")
+    user_password = request.form.get("password")
     # - use customers.get_by_email() to retrieve corresponding Customer
     #   object (if any)
+    user = customers.get_by_email(user_email)
+
+    if not user:
+        flash("Sorry, this email-address does not exist in our system.")
+        return redirect("/login")
+
     # - if a Customer with that email was found, check the provided password
     #   against the stored one
+    
+    if user_password != user.password:
+        flash("The password does not match our records.")
+        return redirect("/login")
+
+    session['logged_in_customer_email'] = user.email_address
+    print(session)
+    flash("Logged in successfully!")
+    return redirect("/melons")    
+
     # - if they match, store the user's email in the session, flash a success
     #   message and redirect the user to the "/melons" route
     # - if they don't, flash a failure message and redirect back to "/login"
-    # - do the same if a Customer with that email doesn't exist
+    # - do the same if a Customer with that email doesn't exist 
 
-    return "Oops! This needs to be implemented"
+@app.route("/logout")
+def process_logout():
+    """Log the user out of the site."""
+
+    del session['logged_in_customer_email']
+    flash("Logged out succesfully!")
+    return redirect("/melons")
 
 
 @app.route("/checkout")

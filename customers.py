@@ -45,6 +45,8 @@ def read_customers_from_file(filepath):
 
 def get_by_email(email_address):
     """ Return a customer, given its email address."""
+    if email_address not in customers:
+        return {}
 
     return customers[email_address]
 
